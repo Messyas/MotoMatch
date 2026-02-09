@@ -1,0 +1,1992 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Moto Match",
+    "description": "Documentação da API",
+    "version": "1.0.0"
+  },
+  "host": "undefined:3001",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/v1/dispositivos/pesquisar": {
+      "post": {
+        "tags": [
+          "Pesquisa"
+        ],
+        "summary": "Iniciar ou continuar uma pesquisa conversacional por dispositivos.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "historicoConversa": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "autor": {
+                        "type": "string",
+                        "example": "usuario"
+                      },
+                      "mensagem": {
+                        "type": "string",
+                        "example": "Quero um notebook"
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "example": "2025-01-01T12:00:00Z"
+                      }
+                    }
+                  }
+                },
+                "filtrosSelecionados": {
+                  "type": "object",
+                  "properties": {
+                    "precoMax": {
+                      "type": "number",
+                      "example": 5000
+                    },
+                    "marca": {
+                      "type": "string",
+                      "example": "Dell"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta do assistente",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "acao": {
+                  "type": "string",
+                  "example": "PERGUNTAR"
+                },
+                "dados": {
+                  "type": "object",
+                  "properties": {
+                    "texto": {
+                      "type": "string",
+                      "example": "Qual tamanho de tela você prefere?"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro inesperado no processamento da pesquisa"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/": {
+      "get": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Listar todos os dispositivos",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Lista de dispositivos",
+            "schema": {
+              "$ref": "#/definitions/DispositivoList"
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Adicionar um novo dispositivo na base com características.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateDispositivoDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Dispositivo criado com sucesso",
+            "schema": {
+              "$ref": "#/definitions/Dispositivo"
+            }
+          },
+          "400": {
+            "description": "Erro de validação ou payload inválido"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/batch": {
+      "post": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Adicionar uma lista de dispositivos de uma só vez.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Lista de dispositivos a serem criados",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/CreateDispositivoDTO"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Dispositivos criados com sucesso",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/Dispositivo"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/{id}/aspectos": {
+      "get": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Retornar os scores de aspectos de um dispositivo.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scores de aspectos do dispositivo",
+            "schema": {
+              "$ref": "#/definitions/AspectoScoresResponse"
+            }
+          },
+          "404": {
+            "description": "Dispositivo não encontrado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/{id}/resumo": {
+      "get": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Retornar o resumo consolidado dos comentários de um dispositivo.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumo dos comentários do dispositivo",
+            "schema": {
+              "$ref": "#/definitions/ResumoComentariosResponse"
+            }
+          },
+          "404": {
+            "description": "Dispositivo não encontrado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/{id}/comentarios": {
+      "get": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Listar todos os comentários de um dispositivo.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de comentários do dispositivo",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/Comentario"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Dispositivo não encontrado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/dispositivos/{id}": {
+      "get": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Recuperar dados de um dispositivo específico (com características).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo a ser buscado"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dispositivo encontrado",
+            "schema": {
+              "$ref": "#/definitions/Dispositivo"
+            }
+          },
+          "404": {
+            "description": "Dispositivo não encontrado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Atualizar dados de um dispositivo existente (com características).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo a ser atualizado"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateDispositivoDTO"
+            },
+            "description": "Campos a serem atualizados do dispositivo (parcial ou completo)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dispositivo atualizado com sucesso",
+            "schema": {
+              "$ref": "#/definitions/Dispositivo"
+            }
+          },
+          "404": {
+            "description": "Dispositivo não encontrado"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Dispositivos"
+        ],
+        "summary": "Remover um dispositivo existente.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do dispositivo a ser removido"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Dispositivo removido com sucesso (sem conteúdo)"
+          },
+          "404": {
+            "description": "Dispositivo não encontrado para exclusão"
+          },
+          "500": {
+            "description": "Erro interno no servidor"
+          }
+        }
+      }
+    },
+    "/v1/users/": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Listagem de todos os usuários",
+        "description": "Retorna uma lista de usuários cadastrados, com a data de nascimento formatada como YYYY-MM-DD.",
+        "responses": {
+          "200": {
+            "description": "Lista de usuários retornada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/User"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao listar usuários.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Criar um novo usuário no sistema.",
+        "description": "Adiciona um novo usuário à base de dados após validar e garantir que não exista username, e-mail ou celular duplicados. Após a criação, um e-mail de verificação é enviado ao usuário.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Dados necessários para criar um novo usuário.",
+            "schema": {
+              "$ref": "#/definitions/CreateUsuarioDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário criado com sucesso. Um e-mail de verificação foi enviado para o endereço cadastrado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Algum campo já está cadastrado (username, e-mail ou celular).",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "email"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "E-mail cadastrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao criar o usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/metrics/overview": {
+      "get": {
+        "tags": [
+          "usuario"
+        ],
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/users/{id}": {
+      "get": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Recuperar os dados de um usuário específico.",
+        "description": "Retorna as informações completas de um usuário com base no ID fornecido. Caso o usuário não seja encontrado, retorna erro 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do usuário que deseja consultar."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário localizado com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao buscar o usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Atualizar os dados de um usuário existente.",
+        "description": "  Atualiza os dados de um usuário com base no ID informado.   O endpoint realiza validações de duplicidade de username, e-mail e celular.   Caso o e-mail seja alterado, o usuário é marcado como não verificado e um novo e-mail de verificação é enviado.  ",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do usuário que será atualizado."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUsuarioDTO"
+            },
+            "description": "Dados que serão atualizados."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário atualizado com sucesso."
+                },
+                "user": {
+                  "$ref": "#/definitions/User"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Algum campo já está cadastrado (username, e-mail ou celular).",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "email"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "E-mail cadastrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao atualizar o usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Alterar a senha de um usuário específico.",
+        "description": "  Permite que o usuário altere sua senha informando a senha atual e a nova senha.   Retorna erro caso a senha atual esteja incorreta ou caso o usuário não exista.  ",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do usuário que terá a senha alterada."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Dados necessários para alterar a senha.",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Senha alterada com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Senha atual incorreta ou dados inválidos.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Senha atual incorreta"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar alterar a senha.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Remover um usuário específico do sistema.",
+        "description": "Deleta permanentemente um usuário com base no ID informado. Caso o usuário não exista, retorna 404.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID do usuário que será removido."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Usuário deletado com sucesso. Nenhum conteúdo é retornado."
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não encontrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar deletar o usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me": {
+      "delete": {
+        "tags": [
+          "Usuários"
+        ],
+        "summary": "Remover permanentemente a própria conta do usuário autenticado.",
+        "description": "  Deleta a conta do usuário atualmente autenticado.   Após a exclusão, a sessão é destruída e o cookie de autenticação é removido.  ",
+        "responses": {
+          "204": {
+            "description": "Conta deletada com sucesso. Nenhum conteúdo é retornado."
+          },
+          "401": {
+            "description": "Usuário não está autenticado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Não autenticado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao deletar a conta ou destruir a sessão.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/historico/": {
+      "get": {
+        "tags": [
+          "Histórico"
+        ],
+        "summary": "Recupera o histórico paginado de pesquisas do usuário autenticado.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Número da página (padrão: 1).",
+            "type": "integer"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Quantidade de itens por página (padrão: 3).",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Histórico retornado com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/GetHistoricoResponse"
+            }
+          },
+          "401": {
+            "description": "Usuário não autenticado."
+          },
+          "500": {
+            "description": "Erro inesperado ao buscar o histórico."
+          }
+        }
+      }
+    },
+    "/v1/favoritos/": {
+      "post": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Adicionar um dispositivo aos favoritos do usuário autenticado.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Dados para adicionar o dispositivo aos favoritos.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "required": {
+                  "type": "array",
+                  "example": [
+                    "idDispositivo"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "idDispositivo": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID do dispositivo que será favoritado."
+                        }
+                      }
+                    },
+                    "idHistorico": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "nullable": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "ID opcional de um histórico de pesquisa associado."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Favorito adicionado com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/Favorito"
+            }
+          },
+          "401": {
+            "description": "Usuário não autenticado."
+          },
+          "409": {
+            "description": "O dispositivo já foi favoritado anteriormente."
+          },
+          "500": {
+            "description": "Erro ao adicionar favorito."
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Listar todos os dispositivos favoritados pelo usuário autenticado.",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "Lista de favoritos do usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "$ref": "#/definitions/Favorito"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Usuário não autenticado."
+          },
+          "500": {
+            "description": "Erro ao listar favoritos."
+          }
+        }
+      }
+    },
+    "/v1/auth/signup": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Cadastrar um novo usuário no sistema.",
+        "description": "  Realiza validações de username, e-mail e celular.  Após criar o usuário, envia um e-mail de verificação.  Caso um token de verificação tenha sido enviado nos últimos 60s,  o endpoint retorna erro 429 para evitar spam.  ",
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Cadastro realizado com sucesso. Verifique seu e-mail para ativar a conta."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Algum campo já está cadastrado no sistema.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "username | email | celular"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Username cadastrado | E-mail cadastrado | Celular cadastrado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "429": {
+            "description": "Muitos pedidos de envio de e-mail de verificação.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Um e-mail de verificação já foi enviado. Aguarde Xs para reenviar."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar cadastrar usuário.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/SignUpDTO"
+              },
+              "description": "Dados necessários para criação de um novo usuário."
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Realizar o login do usuário no sistema.",
+        "description": "  Valida as credenciais do usuário e inicia uma sessão autenticada.  O login só é permitido se o e-mail estiver verificado.  Após autenticação, o ID do usuário é armazenado na sessão.  ",
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Login realizado com sucesso"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Credenciais inválidas"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "E-mail ainda não verificado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail não verificado. Verifique sua caixa de entrada ou solicite um novo link."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar realizar login.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/LoginDTO"
+              },
+              "description": "Credenciais de login do usuário."
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Realizar o logout do usuário.",
+        "description": "Encerra a sessão do usuário autenticado, destrói o cookie de sessão e finaliza a autenticação.",
+        "responses": {
+          "200": {
+            "description": "Logout realizado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Logout realizado com sucesso"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Usuário não está logado ou sessão inexistente.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não logado"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro ao tentar destruir a sessão.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro ao encerrar sessão"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/verify-email": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Verificar o e-mail de um usuário a partir de um token.",
+        "description": "Valida o token enviado por e-mail e ativa a conta caso o token seja válido. Também identifica tokens expirados, inválidos ou contas já verificadas.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Token de verificação recebido por e-mail."
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "examples",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token válido ou e-mail já verificado anteriormente.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail verificado com sucesso."
+                },
+                "status": {
+                  "type": "string",
+                  "example": "success"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            },
+            "examples": {
+              "verified": {
+                "value": {
+                  "message": "E-mail verificado com sucesso.",
+                  "status": "success"
+                }
+              },
+              "alreadyVerified": {
+                "value": {
+                  "message": "E-mail já verificado anteriormente.",
+                  "status": "already-verified"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token inválido ou já utilizado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Token de verificação inválido ou já utilizado."
+                },
+                "status": {
+                  "type": "string",
+                  "example": "invalid"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "410": {
+            "description": "Token expirado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "O link de verificação expirou. Solicite um novo e-mail."
+                },
+                "status": {
+                  "type": "string",
+                  "example": "expired"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao validar o token.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/resend-verification-email": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Reenviar o e-mail de verificação da conta.",
+        "description": "Gera um novo token de verificação e envia novamente o e-mail de confirmação para o usuário.",
+        "responses": {
+          "200": {
+            "description": "E-mail de verificação reenviado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail de verificação reenviado com sucesso."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "E-mail inválido ou a conta já foi verificada.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail inválido ou já verificado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Usuário não encontrado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar reenviar o e-mail.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@exemplo.com"
+                  }
+                }
+              },
+              "description": "E-mail do usuário que irá receber o novo link de verificação."
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Obtém os dados do usuário autenticado.",
+        "description": "Retorna as informações do usuário  nte logado no sistema. A autenticação é feita via sessão (cookies).",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/auth/google": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Iniciar o fluxo de autenticação via Google OAuth 2.0.",
+        "description": "  Gera a URL de autorização do Google e inicia o fluxo OAuth.   • Se o cliente solicitar JSON (ex.: via fetch ou header Accept: application/json), o endpoint retorna { url }   • Caso contrário, o navegador é redirecionado automaticamente para a página de login do Google    Aceita um parâmetro opcional \"state\", útil para redirecionar usuários após o login.  ",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Valor opcional usado para validar ou rastrear o fluxo após o login."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL de autenticação Google gerada com sucesso (modo JSON).",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "example": "https://accounts.google.com/o/oauth2/v2/auth?..."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "302": {
+            "description": "Redireciona o usuário para o Google OAuth (modo navegador)."
+          },
+          "400": {
+            "description": "Credenciais Google não configuradas.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Credenciais Google não configuradas. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao gerar URL de autenticação.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/google/callback": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Callback do OAuth Google.",
+        "description": "  Processa o código de autorização recebido do Google OAuth 2.0,  autentica o usuário, cria/atualiza cadastro no sistema e inicia uma sessão.   • Aceita tanto resposta JSON quanto redirecionamento (dependendo de wantsJsonResponse())   • Pode retornar refresh_token quando disponível   • Pode criar ou atualizar o usuário automaticamente via Google Profile   ",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Código de autorização enviado pelo Google OAuth 2.0."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Valor opcional enviado na etapa inicial do OAuth para validação."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login via Google realizado com sucesso (resposta JSON).",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Login via Google realizado com sucesso."
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "idUsuario": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "nome": {
+                      "type": "string",
+                      "example": "João da Silva"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "joao@example.com"
+                    }
+                  }
+                },
+                "refreshToken": {
+                  "type": "string",
+                  "example": "1 0gAExemploRefresh123"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Código de autorização ausente ou inválido.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Código de autorização ausente."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao finalizar o login via Google.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Falha ao completar login via Google."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/dev/get-refresh-token": {
+      "get": {
+        "tags": [
+          "Desenvolvimento"
+        ],
+        "summary": "Gerar a URL de autorização do Google para obter um refresh_token (somente ambiente de desenvolvimento).",
+        "description": "Retorna a URL de autenticação do Google com os escopos apropriados e instruções para obter manualmente um refresh_token. Só funciona em ambiente de desenvolvimento (NODE_ENV !== production).",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Valor opcional enviado ao Google para validação posterior."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL gerada com sucesso para autenticação Google.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "example": "https://accounts.google.com/o/oauth2/v2/auth?..."
+                },
+                "scopes": {
+                  "type": "array",
+                  "example": [
+                    "https://www.googleapis.com/auth/calendar"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "instructions": {
+                  "type": "string",
+                  "example": "Abra a URL em um navegador, finalize o consentimento e copie o refresh_token exibido nos logs do backend."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciais Google não configuradas.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Credenciais Google não configuradas. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "Endpoint bloqueado em ambiente de produção.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Endpoint disponível apenas em ambiente de desenvolvimento."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao gerar a URL de autenticação.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Solicitar redefinição de senha.",
+        "description": "Envia um e-mail contendo um link de redefinição de senha, caso o e-mail informado exista no sistema.",
+        "responses": {
+          "200": {
+            "description": "E-mail de redefinição enviado com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail de redefinição enviado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "E-mail não foi enviado no corpo da requisição.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "E-mail é obrigatório."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "O e-mail informado não está cadastrado no sistema.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Este e-mail não está cadastrado."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao tentar solicitar nova senha.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@exemplo.com"
+                  }
+                }
+              },
+              "description": "E-mail do usuário que deseja redefinir a senha."
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/reset-password": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Redefinir a senha do usuário.",
+        "description": "Usa um token válido enviado por e-mail para definir uma nova senha.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "description": "Token de redefinição recebido por e-mail",
+            "type": "string"
+          },
+          {
+            "name": "required",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Senha redefinida com sucesso.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Senha redefinida com sucesso."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Token inválido, expirado ou campo ausente.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Token inválido, expirado ou campo ausente."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao redefinir senha.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Erro interno no servidor."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "NovaSenha123"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CreateUsuarioDTO": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "usuario001"
+        },
+        "nome": {
+          "type": "string",
+          "example": "Joao da Silva Pereira"
+        },
+        "nascimento": {
+          "type": "string",
+          "example": "2000-01-10"
+        },
+        "email": {
+          "type": "string",
+          "example": "joao@motomatch.com"
+        },
+        "celular": {
+          "type": "string",
+          "example": "5592988888888"
+        }
+      }
+    },
+    "UpdateUsuarioDTO": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "usuario001"
+        },
+        "nome": {
+          "type": "string",
+          "example": "Joao da Silva Pereira"
+        },
+        "email": {
+          "type": "string",
+          "example": "joao@motomatch.com"
+        },
+        "celular": {
+          "type": "string",
+          "example": "5592988888888"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "8a2053de-5d92-4c43-97c0-c9b2b0d56703"
+        },
+        "username": {
+          "type": "string",
+          "example": "usuario001"
+        },
+        "nome": {
+          "type": "string",
+          "example": "Joao da Silva Pereira"
+        },
+        "nascimento": {
+          "type": "string",
+          "example": "2000-01-10"
+        },
+        "email": {
+          "type": "string",
+          "example": "joao@motomatch.com"
+        },
+        "celular": {
+          "type": "string",
+          "example": "5592988888888"
+        }
+      }
+    }
+  }
+}

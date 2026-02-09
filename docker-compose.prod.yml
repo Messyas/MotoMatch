@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: backend
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+    environment:
+      - RECOMMENDATION_SERVICE_URL=http://recommendation:8000/ml/score-dispositivos
+      - RECOMMENDATION_SERVICE_TIMEOUT=4000
+    depends_on:
+      recommendation:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend/qual-cel-ai
+      dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:3001/v1
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  recommendation:
+    build:
+      context: .
+      dockerfile: recommendationService/Dockerfile
+    container_name: recommendation
+    restart: always
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  app-network:
+    driver: bridge

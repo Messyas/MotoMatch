@@ -1,0 +1,90 @@
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    container_name: backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    environment:
+      - RECOMMENDATION_SERVICE_URL=http://recommendation:8000/ml/score-dispositivos
+      - RECOMMENDATION_SERVICE_TIMEOUT=4000
+    depends_on:
+      recommendation:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend/qual-cel-ai
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/qual-cel-ai:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/v1
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    depends_on:
+      - postgres
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: sonarqube_db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonarqube
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  recommendation:
+    build:
+      context: .
+      dockerfile: recommendationService/Dockerfile
+    container_name: recommendation
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgres_data:

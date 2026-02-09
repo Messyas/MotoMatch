@@ -1,0 +1,299 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Dispositivo {
+  idDispositivo String   @id @default(uuid()) @map("id_dispositivo") @db.Char(36)
+  fabricante    String   @map("tx_fabricante") @db.VarChar(40)
+  modelo        String   @map("tx_modelo") @db.VarChar(100)
+  preco         Decimal @map("vl_preco") @db.Decimal(10, 2)
+  photos        Json?
+  createdAt     DateTime @default(now()) @map("dt_created_at")
+  updatedAt     DateTime @updatedAt @map("dt_updated_at")
+
+  caracteristicas    CaracteristicaDispositivo[]
+  favoritos          Favorito[]
+  resultadosPesquisa ResultadoPesquisa[]
+  comentarios        ComentarioDispositivo[]
+  aspectoScores      DispositivoAspectoScore[]
+  resumoComentarios  DispositivoResumoComentario?
+
+  @@unique([fabricante, modelo], name: "fabricante_modelo")
+  @@index([modelo])
+  @@map("dispositivo")
+}
+
+model Usuario {
+  idUsuario           String   @id @default(uuid()) @map("id_usuario") @db.Char(36)
+  username            String   @unique @map("tx_username") @db.VarChar(30)
+  nome                String   @map("tx_nome") @db.VarChar(100)
+  nascimento          DateTime @map("dt_nascimento") @db.Date
+  email               String   @unique @map("tx_email") @db.VarChar(100)
+  emailVerificado     Boolean   @default(false) @map("fl_email_verificado")
+  verificadoEm        DateTime? @map("dt_email_verificado") @db.DateTime(3)
+  celular             String   @unique @map("tx_celular") @db.VarChar(15)
+  password            String   @map("tx_password") @db.VarChar(255)
+  tipo                String   @default("1") @map("tx_tipo") @db.Char(1) // 0 - Administrador ; 1 - Usuário / 2 - Suporte
+  createdAt           DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+
+  favoritos Favorito[]
+  pesquisas HistoricoPesquisa[]
+  eventosPesquisa PesquisaEvento[]
+  contasOAuth ContaOAuth[]
+  tokensVerificacaoEmail EmailVerificationToken[]
+
+  @@index([username])
+  @@map("usuario")
+}
+
+model ContaOAuth {
+  idConta       String   @id @default(uuid()) @map("id_conta") @db.Char(36)
+  provedor      String   @map("tx_provedor") @db.VarChar(40)
+  provedorId    String   @map("tx_provedor_id") @db.VarChar(100)
+  emailProvedor String?  @map("tx_email_provedor") @db.VarChar(100)
+  fotoPerfil    String?  @map("tx_foto_perfil") @db.VarChar(255)
+  accessToken   String?  @map("tx_access_token") @db.Text
+  refreshToken  String?  @map("tx_refresh_token") @db.Text
+  idUsuario     String   @map("id_usuario") @db.Char(36)
+  createdAt     DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+
+  usuario Usuario @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+
+  @@unique([provedor, provedorId], name: "provedor_provedorId")
+  @@index([idUsuario])
+  @@map("conta_oauth")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid()) @map("id_token") @db.Char(36)
+  token     String   @unique @map("tx_token") @db.Char(64)
+  userId    String   @map("id_usuario") @db.Char(36)
+  tipo      String @default("0") @map("tx_tipo") @db.Char(1) // 0 - verify-email ; 1 - password-reset
+  expiresAt DateTime @map("dt_expires_at") @db.DateTime(3)
+  createdAt DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+
+  usuario Usuario @relation(fields: [userId], references: [idUsuario], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_token")
+}
+
+model Caracteristica {
+  idCaracteristica String @id @default(uuid()) @map("id_caracteristica") @db.Char(36)
+  tipo             String @map("tx_tipo") @db.VarChar(45)
+  descricao        String @map("tx_descricao") @db.VarChar(45)
+
+  dispositivos CaracteristicaDispositivo[]
+
+  @@unique([tipo, descricao], name: "tipo_descricao")
+  @@map("caracteristica")
+}
+
+model CaracteristicaDispositivo {
+  idDispositivo    String @map("id_dispositivo") @db.Char(36)
+  idCaracteristica String @map("id_caracteristica") @db.Char(36)
+
+  caracteristica Caracteristica @relation(fields: [idCaracteristica], references: [idCaracteristica], onDelete: Cascade)
+  dispositivo    Dispositivo    @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+
+  @@id([idDispositivo, idCaracteristica])
+  @@map("caracteristica_dispositivo")
+}
+
+model Favorito {
+  idFavorito    String @id @default(uuid()) @map("id_favorito") @db.Char(36)
+  idUsuario     String @map("id_usuario") @db.Char(36)
+  idDispositivo String @map("id_dispositivo") @db.Char(36)
+  idHistorico   String @map("id_historico") @db.Char(36) // Campo para guardar o contexto
+
+  usuario     Usuario           @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  dispositivo Dispositivo       @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+  historico   HistoricoPesquisa @relation(fields: [idHistorico], references: [idHistorico], onDelete: Cascade)
+
+  @@unique([idUsuario, idDispositivo])
+  @@map("favorito")
+}
+
+model HistoricoPesquisa {
+  idHistorico String   @id @default(uuid()) @map("id_historico") @db.Char(36)
+  idUsuario   String   @map("id_usuario") @db.Char(36)
+  idEvento    String?  @map("id_evento") @db.Char(36)
+  criterios   Json     @map("js_criterios")
+  consoleInput String? @map("tx_console_input") @db.VarChar(400)
+  seletores    Json?    @map("js_seletores")
+  createdAt   DateTime @default(now()) @map("dt_created_at")
+
+  usuario    Usuario             @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  evento     PesquisaEvento?     @relation(fields: [idEvento], references: [idEvento])
+  resultados ResultadoPesquisa[]
+  favoritos  Favorito[]
+
+  @@index([idEvento])
+  @@map("historico_pesquisa")
+}
+
+model ResultadoPesquisa {
+  idResultado   String @id @default(uuid()) @map("id_resultado") @db.Char(36)
+  idHistorico   String @map("id_historico") @db.Char(36)
+  idDispositivo String @map("id_dispositivo") @db.Char(36)
+  matchScore    Float  @map("nb_match_score")
+  criteriosBatidos Json? @map("js_criterios_batidos")
+  justificativas Json? @map("js_justificativas")
+
+  historico   HistoricoPesquisa @relation(fields: [idHistorico], references: [idHistorico], onDelete: Cascade)
+  dispositivo Dispositivo       @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+
+  @@map("resultado_pesquisa")
+}
+
+model PesquisaEvento {
+  idEvento        String   @id @map("id_evento") @db.Char(36)
+  idUsuario       String?  @map("id_usuario") @db.Char(36)
+  idSessao        String?  @map("id_sessao") @db.Char(36)
+  textoLivre      String?  @map("tx_texto_livre") @db.Text
+  selecionadosUi  Json?    @map("js_selecionados_ui")
+  criteriosGemini Json?    @map("js_criterios_gemini")
+  criteriosUsados Json?    @map("js_criterios_usados")
+  descartados     Json?    @map("js_descartados")
+  createdAt       DateTime @default(now()) @map("dt_created_at")
+
+  historicos HistoricoPesquisa[]
+  sessao     SessaoAnonima?    @relation(fields: [idSessao], references: [idSessao])
+  usuario    Usuario?          @relation(fields: [idUsuario], references: [idUsuario])
+  selecoes   SelecaoPesquisa[]
+
+  @@index([idSessao])
+  @@index([idUsuario])
+  @@map("pesquisa_evento")
+}
+
+model SelecaoPesquisa {
+  idSelecao String                @id @map("id_selecao") @db.Char(36)
+  idEvento  String                @map("id_evento") @db.Char(36)
+  tipo      String                @map("tx_tipo") @db.VarChar(45)
+  descricao String                @map("tx_descricao") @db.VarChar(255)
+  origem    SelecaoPesquisaOrigem @map("tx_origem")
+  status    SelecaoPesquisaStatus @map("tx_status")
+  createdAt DateTime              @default(now()) @map("dt_created_at")
+
+  evento PesquisaEvento @relation(fields: [idEvento], references: [idEvento], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([idEvento])
+  @@index([origem, status])
+  @@index([tipo])
+  @@index([tipo, descricao])
+  @@map("selecao_pesquisa")
+}
+
+model SessaoAnonima {
+  idSessao  String   @id @map("id_sessao") @db.Char(36)
+  createdAt DateTime @default(now()) @map("dt_created_at")
+
+  eventos PesquisaEvento[]
+
+  @@map("sessao_anonima")
+}
+
+enum SelecaoPesquisaOrigem {
+  ui
+  gemini
+
+  @@map("selecao_pesquisa_tx_origem")
+}
+
+enum SelecaoPesquisaStatus {
+  usado
+  descartado
+
+  @@map("selecao_pesquisa_tx_status")
+}
+
+model ComentarioDispositivo {
+  idComentario      String   @id @default(uuid()) @map("id_comentario") @db.Char(36)
+  idDispositivo     String   @map("id_dispositivo") @db.Char(36)
+  plataforma        String   @map("tx_plataforma") @db.VarChar(40)
+  referenciaExterna String   @map("tx_referencia_externa") @db.VarChar(80)
+  autor             String?  @map("tx_autor") @db.VarChar(100)
+  nota              Int?     @map("nb_nota")
+  conteudo          String   @map("tx_conteudo") @db.Text
+  publicadoEm       DateTime @map("dt_publicado_em") @db.DateTime(3)
+  analisadoEm       DateTime? @map("dt_analisado_em") @db.DateTime(3)
+  createdAt         DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+  updatedAt         DateTime @updatedAt @map("dt_updated_at") @db.DateTime(3)
+
+  dispositivo Dispositivo        @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+  analises    ComentarioAnalise[]
+
+  @@unique([idDispositivo, plataforma, referenciaExterna], name: "dispositivo_plataforma_referencia")
+  @@index([idDispositivo])
+  @@map("comentario_dispositivo")
+}
+
+model ComentarioAnalise {
+  idAnalise       String   @id @default(uuid()) @map("id_analise") @db.Char(36)
+  idComentario    String   @unique @map("id_comentario") @db.Char(36)
+  status          String   @default("pending") @map("tx_status") @db.VarChar(20)
+  resumo          String?  @map("tx_resumo") @db.VarChar(255)
+  promptGemini    Json?    @map("js_prompt_gemini")
+  respostaGemini  Json?    @map("js_resposta_gemini")
+  erro            String?  @map("tx_erro") @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+  updatedAt       DateTime @updatedAt @map("dt_updated_at") @db.DateTime(3)
+  comentario ComentarioDispositivo @relation(fields: [idComentario], references: [idComentario], onDelete: Cascade)
+  aspectos   ComentarioAspecto[]
+  @@map("comentario_analise")
+}
+
+model ComentarioAspecto {
+  idAspecto     String   @id @default(uuid()) @map("id_aspecto") @db.Char(36)
+  idAnalise     String   @map("id_analise") @db.Char(36)
+  aspecto       String   @map("tx_aspecto") @db.VarChar(100)
+  sentimento    String   @map("tx_sentimento") @db.VarChar(20)
+  score         Int?     @map("nb_score")
+  justificativa String?  @map("tx_justificativa") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+
+  analise ComentarioAnalise @relation(fields: [idAnalise], references: [idAnalise], onDelete: Cascade)
+
+  @@index([idAnalise])
+  @@map("comentario_aspecto")
+}
+
+model DispositivoAspectoScore {
+  idScore        String   @id @default(uuid()) @map("id_score") @db.Char(36)
+  idDispositivo  String   @map("id_dispositivo") @db.Char(36)
+  aspecto        String   @map("tx_aspecto") @db.VarChar(100)
+  mediaScore     Float?   @map("nb_media_score")
+  totalOpinions  Int      @default(0) @map("nb_total_opinioes")
+  createdAt      DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+  updatedAt      DateTime @updatedAt @map("dt_updated_at") @db.DateTime(3)
+
+  dispositivo Dispositivo @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+
+  @@unique([idDispositivo, aspecto], name: "dispositivo_aspecto_unico")
+  @@index([idDispositivo])
+  @@map("dispositivo_aspecto_score")
+}
+
+model DispositivoResumoComentario {
+  idResumo                   String   @id @default(uuid()) @map("id_resumo") @db.Char(36)
+  idDispositivo              String   @unique @map("id_dispositivo") @db.Char(36)
+  resumo                     String?  @map("tx_resumo") @db.VarChar(1000)
+  totalAnalisesConsideradas  Int      @default(0) @map("nb_total_analises_consideradas")
+  totalAnalisesDisponiveis   Int      @default(0) @map("nb_total_analises_disponiveis")
+  createdAt                  DateTime @default(now()) @map("dt_created_at") @db.DateTime(3)
+  updatedAt                  DateTime @updatedAt @map("dt_updated_at") @db.DateTime(3)
+
+  dispositivo Dispositivo @relation(fields: [idDispositivo], references: [idDispositivo], onDelete: Cascade)
+
+  @@map("dispositivo_resumo_comentario")
+}

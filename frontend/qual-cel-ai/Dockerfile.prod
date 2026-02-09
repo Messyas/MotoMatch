@@ -1,0 +1,36 @@
+# Stage 1: Build
+FROM node:lts AS builder
+WORKDIR /app
+
+# Build-arg para Next.js
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+# Instala dependências
+COPY package*.json ./
+RUN npm ci
+
+# Copia todo o código do projeto
+COPY . .
+
+# Build do Next.js
+RUN npm run build
+
+# Stage 2: Runtime
+FROM node:lts
+WORKDIR /app
+
+# Instala apenas dependências de produção
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copia build e arquivos essenciais do builder
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
+# Expõe porta
+EXPOSE 3000
+
+# Comando de execução
+CMD ["npm", "run", "start"]

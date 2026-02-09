@@ -1,0 +1,48 @@
+name: CD - Build & Push Docker Images
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # --- BACKEND ---
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.prod
+          push: true
+          tags: josivaljunior/back:latest
+
+      # --- FRONTEND ---
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend/qual-cel-ai
+          file: ./frontend/qual-cel-ai/Dockerfile.prod
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://back-c16b.onrender.com/v1
+          tags: josivaljunior/front:latest
+
+      # --- RECOMMENDATION SERVICE (NOVO) ---
+      - name: Build & push recommendation image
+        uses: docker/build-push-action@v5
+        with:
+          # Contexto na raiz (.) porque o Dockerfile copia a pasta recommendationService
+          context: .
+          file: ./recommendationService/Dockerfile
+          push: true
+          tags: josivaljunior/recommendation:latest

@@ -1,0 +1,6 @@
+node_modules
+/src/generated/prisma
+/build
+.env
+/coverage
+package-lock.json

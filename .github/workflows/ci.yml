@@ -1,0 +1,82 @@
+name: CI - Test (develop)
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  test_and_validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- CONFIGURAÇÃO DE LINGUAGENS ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      # --- BACKEND (Node) ---
+      - name: Cache backend npm
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: backend-npm-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            backend-npm-
+
+      - name: Install & test backend
+        run: |
+          cd backend
+          npm ci
+          npx prisma generate
+          npm run test -- --passWithNoTests
+
+      # --- FRONTEND (Node) ---
+      - name: Cache frontend npm
+        uses: actions/cache@v3
+        with:
+          path: frontend/qual-cel-ai/node_modules
+          key: frontend-npm-${{ hashFiles('frontend/qual-cel-ai/package-lock.json') }}
+          restore-keys: |
+            frontend-npm-
+
+      - name: Install & test frontend
+        run: |
+          cd frontend/qual-cel-ai
+          npm ci
+          npm run test -- --passWithNoTests
+
+      # --- RECOMMENDATION SERVICE (Python) ---
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('recommendationService/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install recommendation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r recommendationService/requirements.txt
+
+      # --- VALIDATE DOCKERFILES ---
+      - name: Validate backend Dockerfile (prod)
+        run: docker build -t back-test -f backend/Dockerfile.prod backend
+
+      - name: Validate frontend Dockerfile (prod)
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://back-c16b.onrender.com/v1 \
+            -t front-test \
+            -f frontend/qual-cel-ai/Dockerfile.prod \
+            frontend/qual-cel-ai
+
+      - name: Validate recommendation Dockerfile
+        run: docker build -t rec-test -f recommendationService/Dockerfile .
