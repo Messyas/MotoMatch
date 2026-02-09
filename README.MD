@@ -13,7 +13,6 @@ Um sistema inteligente de recomendação de smartphones baseado em análise de s
 | **Cleicy Priscilla Aragão dos Santos** | FullStack Developer   |
 | **Josival Salvador Monteiro Júnior** | FullStack Developer   |
 | **Messyas Gois França** | FullStack Developer   |
-| **Ricardo Mendonça Braz** | FrontEnd Developer    |
 | **Vanderson Cardoso Rodrigues** | DevOps / Tester       |
 
 ---
