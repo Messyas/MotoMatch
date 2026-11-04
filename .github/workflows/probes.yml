@@ -1,0 +1,40 @@
+# Roda os probes a partir de um IP de datacenter (GitHub Actions), para comparar
+# com o resultado do seu PC e detectar bloqueio por IP na borda do Mercado Livre.
+name: probes
+
+on:
+  workflow_dispatch:
+    inputs:
+      ml_query:
+        description: "Produto para buscar no catálogo do ML"
+        default: "moto g85"
+      yt_model:
+        description: "Modelo para o probe do YouTube (vazio = não roda)"
+        default: ""
+
+jobs:
+  probes:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/probes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun test
+      - name: Probe Mercado Livre
+        env:
+          ML_CLIENT_ID: ${{ secrets.ML_CLIENT_ID }}
+          ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
+        run: bun run probe:ml -- "${{ inputs.ml_query }}"
+      - name: Probe YouTube
+        if: ${{ inputs.yt_model != '' }}
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: bun run probe:yt -- "${{ inputs.yt_model }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-reports
+          path: tools/probes/reports/
