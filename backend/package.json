@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon --watch src --ext js,ts,json --exec tsx src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "docker:up": "docker compose -f tools/docker-compose.yml up -d",
     "docker:down": "docker compose -f tools/docker-compose.yml down",
     "swagger": "tsx src/swagger.ts",

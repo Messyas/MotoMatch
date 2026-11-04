@@ -20,7 +20,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend/qual-cel-ai
+      context: ./client
       dockerfile: Dockerfile.prod
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:3001/v1

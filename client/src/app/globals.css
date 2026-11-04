@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 body {
-  font-family: var(--font-roboto), sans-serif;
+  font-family: "Roboto", Arial, sans-serif;
 }
 
 h1,
@@ -11,12 +11,12 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-montserrat), sans-serif;
+  font-family: "Montserrat", Arial, sans-serif;
 }
 
 pre,
 code {
-  font-family: var(--font-roboto-mono), monospace;
+  font-family: "Roboto Mono", Consolas, monospace;
 }
 
 @custom-variant dark (&:is(.dark *));
