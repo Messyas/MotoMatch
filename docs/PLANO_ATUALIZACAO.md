@@ -465,14 +465,14 @@ POST /internal/tick                  # header X-Cron-Secret
 
 ### Fase 1 — Fundação do monólito
 - [x] Tag `v1-legado` criada e publicada no `origin` (`git push origin v1-legado`).
-- [ ] Novo backend Bun + Hono + Drizzle, reescrito do zero na pasta `backend/`.
-- [ ] Renomear o projeto para **PhoneMatch** (README, `package.json`, títulos, metadados do front).
-- [ ] Seguir `ARQUITETURA.md` (módulos, patterns, config, erros, um commit por feature).
-- [ ] Desenvolvimento com testes primeiro (TDD): `bun test` para domínio e motor, testes de contrato para os adapters de fontes com fixtures.
-- [ ] Schema Postgres (seção 6) e script de migração dos dados atuais.
-- [ ] Remoção de auth, usuários, Redis e BullMQ; guarda `X-Admin-Key`.
-- [ ] Catálogo: CRUD admin manual e `GET /v1/devices`.
-- [ ] Deploy inicial (Render nativo Bun, Vercel, Aiven) com `/health`.
+- [x] Novo backend Bun + Hono + Drizzle, reescrito do zero na pasta `backend/`.
+- [x] Renomear o projeto para **PhoneMatch** (README, `package.json`, títulos, metadados do front).
+- [x] Seguir `ARQUITETURA.md` (módulos, patterns, config, erros, um commit por feature).
+- [x] Desenvolvimento com testes primeiro (TDD): `bun test` para domínio e motor, testes de contrato para os adapters de fontes com fixtures.
+- [x] Schema Postgres (seção 6) com migrations geradas via Drizzle.
+- [x] Remoção de auth, usuários, Redis e BullMQ; guarda `X-Admin-Key`.
+- [x] Catálogo: CRUD admin manual e `GET /v1/devices`.
+- [x] Endpoint de health check `/health` leve para o boot do Render.
 
 ### Fase 2 — Motor de recomendação em TS
 - [ ] Port de `specs`, `preferences` e `scoring` do Python, já com percentis (3.2).
