@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { createApp } from "../../src/app";
 import { InMemoryDeviceRepository } from "../../src/modules/catalog";
 import { aConfig } from "../builders/config.builder";
+import { aDevice } from "../builders/device.builder";
 
 describe("HTTP API", () => {
   const config = aConfig().withAdminKey("super-secret-admin-key-24-chars").build();
@@ -28,6 +29,36 @@ describe("HTTP API", () => {
     const body = (await res.json()) as any;
     expect(body.items).toBeArray();
     expect(body.items).toHaveLength(0);
+  });
+
+  it("POST /v1/recommend returns ranked recommendations based on constraints and weights", async () => {
+    const deviceRepo = new InMemoryDeviceRepository();
+    const d1 = aDevice().withId("d1").withModel("Budget King").withPriceCents(130000).withBatteryMah(6000).build();
+    const d2 = aDevice().withId("d2").withModel("Premium Pro").withPriceCents(350000).withBatteryMah(4500).build();
+    await deviceRepo.save(d1, d1.specs);
+    await deviceRepo.save(d2, d2.specs);
+
+    const { app } = createApp({ config, deviceRepo });
+
+    const res = await app.request("/v1/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        constraints: [
+          { kind: "maxPrice", value: 200000 },
+        ],
+        weights: {
+          battery: 0.8,
+        },
+        limit: 3,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0].device.id).toBe("d1");
+    expect(body.items[0].fitPercent).toBeGreaterThanOrEqual(50);
   });
 
   it("POST /v1/admin/devices requires X-Admin-Key", async () => {

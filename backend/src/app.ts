@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createCatalogModule, type DeviceRepository } from "./modules/catalog";
+import { createRecommenderModule } from "./modules/recommender";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
 import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
@@ -31,6 +32,10 @@ export function createApp(deps: AppDeps) {
     clock,
   });
 
+  const recommender = createRecommenderModule({
+    catalog: catalog.api,
+  });
+
   const app = new Hono();
   app.onError(createErrorHandler(logger));
 
@@ -54,6 +59,9 @@ export function createApp(deps: AppDeps) {
   // Public Catalog Routes
   app.route("/v1/devices", catalog.routes.publicRoutes);
 
+  // Public Recommender Routes (Direct deterministic MAUT engine)
+  app.route("/v1/recommend", recommender.routes);
+
   // Protected Admin Routes
   app.use("/v1/admin/*", createAdminAuthMiddleware(deps.config.admin.key));
   app.route("/v1/admin/devices", catalog.routes.adminRoutes);
@@ -61,6 +69,7 @@ export function createApp(deps: AppDeps) {
   return {
     app,
     catalog,
+    recommender,
     clock,
     logger,
     events,

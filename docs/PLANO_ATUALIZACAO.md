@@ -475,10 +475,11 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] Endpoint de health check `/health` leve para o boot do Render.
 
 ### Fase 2 — Motor de recomendação em TS
-- [ ] Port de `specs`, `preferences` e `scoring` do Python, já com percentis (3.2).
-- [ ] Agregação bayesiana com acumuladores (3.3), Pareto (3.4) e utilidade MAUT (3.1).
+- [x] Port de `specs`, `preferences` e `scoring` do Python para TypeScript, com normalização por percentis do catálogo (3.2).
+- [x] Motor de recomendação multicritério (MAUT) (3.1), filtro de dominância de Pareto (3.4) e regras de crítica (3.5).
+- [x] Endpoint direto `POST /v1/recommend` com `RecommendationQueryBuilder`.
 - [ ] Cenários de referência e `eval-scenarios` no CI (3.8).
-- [ ] `POST /v1/recommend` e `POST /v1/chat` com extração de critérios (adaptando o `gemini.service` atual) e crítica (3.5).
+- [ ] `POST /v1/chat` com extração de critérios (Gemini) e crítica conversacional.
 
 ### Fase 3 — Ingestão de opiniões
 - [ ] Adapters YouTube, ML (se o spike passar), CSV e manual.
