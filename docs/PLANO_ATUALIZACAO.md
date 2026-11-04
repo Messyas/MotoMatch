@@ -464,7 +464,7 @@ POST /internal/tick                  # header X-Cron-Secret
 - **Critério de saída:** a matriz de fontes da seção 4.1 atualizada com resultados reais.
 
 ### Fase 1 — Fundação do monólito
-- [x] Tag `v1-legado` criada no commit `f758cd6` (falta `git push origin v1-legado`).
+- [x] Tag `v1-legado` criada e publicada no `origin` (`git push origin v1-legado`).
 - [ ] Novo backend Bun + Hono + Drizzle, reescrito do zero na pasta `backend/`.
 - [ ] Renomear o projeto para **PhoneMatch** (README, `package.json`, títulos, metadados do front).
 - [ ] Seguir `ARQUITETURA.md` (módulos, patterns, config, erros, um commit por feature).

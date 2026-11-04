@@ -1,3 +1,0 @@
-"""
-Recommendation service package.
-"""
