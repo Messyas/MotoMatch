@@ -1,0 +1,68 @@
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { createCatalogModule, type DeviceRepository } from "./modules/catalog";
+import type { AppConfig } from "./shared/config/config.schema";
+import { createDatabase, type Database } from "./shared/db/client";
+import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
+import { createAdminAuthMiddleware } from "./shared/http/admin-auth.middleware";
+import { createErrorHandler } from "./shared/http/error-handler";
+import { type Logger, StructuredLogger } from "./shared/logging/logger";
+import { type Clock, SystemClock } from "./shared/time/clock";
+
+export interface AppDeps {
+  readonly config: AppConfig;
+  readonly clock?: Clock;
+  readonly logger?: Logger;
+  readonly db?: Database;
+  readonly eventBus?: EventBus;
+  readonly deviceRepo?: DeviceRepository;
+}
+
+export function createApp(deps: AppDeps) {
+  const clock = deps.clock ?? new SystemClock();
+  const logger = deps.logger ?? new StructuredLogger();
+  const events = deps.eventBus ?? new InProcessEventBus(logger);
+  const db = deps.db ?? (deps.deviceRepo ? undefined : createDatabase(deps.config.database));
+
+  const catalog = createCatalogModule({
+    db,
+    deviceRepo: deps.deviceRepo,
+    events,
+    clock,
+  });
+
+  const app = new Hono();
+  app.onError(createErrorHandler(logger));
+
+  app.use(
+    "*",
+    cors({
+      origin: deps.config.server.corsOrigin,
+      allowHeaders: ["Content-Type", "Authorization", "X-Admin-Key", "X-Cron-Secret", "Idempotency-Key"],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    }),
+  );
+
+  // GET /health — lightweight, never touches database (ARQUITETURA §9, PLANO_ATUALIZACAO §10)
+  app.get("/health", (c) =>
+    c.json({
+      status: "ok",
+      timestamp: clock.now().toISOString(),
+    }),
+  );
+
+  // Public Catalog Routes
+  app.route("/v1/devices", catalog.routes.publicRoutes);
+
+  // Protected Admin Routes
+  app.use("/v1/admin/*", createAdminAuthMiddleware(deps.config.admin.key));
+  app.route("/v1/admin/devices", catalog.routes.adminRoutes);
+
+  return {
+    app,
+    catalog,
+    clock,
+    logger,
+    events,
+  };
+}
