@@ -1,0 +1,63 @@
+[
+  {
+    "id": "scenario-1",
+    "name": "Bateria duradoura com preço acessível",
+    "query": {
+      "constraints": [
+        { "kind": "maxPrice", "value": 150000 }
+      ],
+      "weights": {
+        "battery": 0.6,
+        "valueForMoney": 0.4
+      },
+      "limit": 3
+    },
+    "expectedAspectEmphasis": "battery"
+  },
+  {
+    "id": "scenario-2",
+    "name": "Gamer intermediário com 5G e boa RAM",
+    "query": {
+      "constraints": [
+        { "kind": "maxPrice", "value": 220000 },
+        { "kind": "requires5g" },
+        { "kind": "minRamGb", "value": 8 }
+      ],
+      "weights": {
+        "performance": 0.5,
+        "screen": 0.3,
+        "battery": 0.2
+      },
+      "limit": 3
+    },
+    "expectedAspectEmphasis": "performance"
+  },
+  {
+    "id": "scenario-3",
+    "name": "Entusiasta de fotografia",
+    "query": {
+      "weights": {
+        "camera": 0.7,
+        "storage": 0.3
+      },
+      "limit": 3
+    },
+    "expectedAspectEmphasis": "camera"
+  },
+  {
+    "id": "scenario-4",
+    "name": "Melhor custo-benefício abaixo de 1800",
+    "query": {
+      "constraints": [
+        { "kind": "maxPrice", "value": 180000 }
+      ],
+      "weights": {
+        "valueForMoney": 0.6,
+        "battery": 0.2,
+        "performance": 0.2
+      },
+      "limit": 3
+    },
+    "expectedAspectEmphasis": "valueForMoney"
+  }
+]

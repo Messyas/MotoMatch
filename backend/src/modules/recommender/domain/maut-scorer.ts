@@ -99,9 +99,12 @@ export function scoreDeviceMaut(input: MautScorerInput): ScoredDeviceResult {
   const finalUtility = Number(Math.max(0.05, Math.min(1.0, totalUtility + clampedBonus)).toFixed(4));
   const fitPercent = Math.round(finalUtility * 100);
 
-  // Top 2 strongest aspects for highlight
+  // Top 2 strongest aspects for highlight based on weighted utility contribution
   const topAspects = [...details]
-    .sort((a, b) => b.compositeScore - a.compositeScore)
+    .sort(
+      (a, b) =>
+        b.compositeScore * (b.weight || 0.1) - a.compositeScore * (a.weight || 0.1),
+    )
     .slice(0, 2)
     .map((d) => d.aspect);
 
@@ -114,3 +117,4 @@ export function scoreDeviceMaut(input: MautScorerInput): ScoredDeviceResult {
     topAspects,
   };
 }
+

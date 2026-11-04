@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { createApp } from "../../src/app";
 import { InMemoryDeviceRepository } from "../../src/modules/catalog";
+import { RuleBasedCriteriaExtractor } from "../../src/modules/chat";
 import { aConfig } from "../builders/config.builder";
 import { aDevice } from "../builders/device.builder";
 
@@ -59,6 +60,31 @@ describe("HTTP API", () => {
     expect(body.items).toHaveLength(1);
     expect(body.items[0].device.id).toBe("d1");
     expect(body.items[0].fitPercent).toBeGreaterThanOrEqual(50);
+  });
+
+  it("POST /v1/chat orchestrates criteria extraction, recommendation and conversational reply", async () => {
+    const deviceRepo = new InMemoryDeviceRepository();
+    const d1 = aDevice().withId("d1").withModel("Moto G85").withPriceCents(169900).withBatteryMah(5000).build();
+    await deviceRepo.save(d1, d1.specs);
+
+    const criteriaExtractor = new RuleBasedCriteriaExtractor();
+    const { app } = createApp({ config, deviceRepo, criteriaExtractor });
+
+    const res = await app.request("/v1/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Quero um celular até 1800 reais com boa bateria",
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.reply).toBeDefined();
+    expect(body.results).toHaveLength(1);
+    expect(body.results[0].device.id).toBe("d1");
+    expect(body.state).toBeDefined();
+    expect(body.state.referenceDeviceId).toBe("d1");
   });
 
   it("POST /v1/admin/devices requires X-Admin-Key", async () => {

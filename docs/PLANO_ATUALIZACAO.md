@@ -478,8 +478,8 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] Port de `specs`, `preferences` e `scoring` do Python para TypeScript, com normalização por percentis do catálogo (3.2).
 - [x] Motor de recomendação multicritério (MAUT) (3.1), filtro de dominância de Pareto (3.4) e regras de crítica (3.5).
 - [x] Endpoint direto `POST /v1/recommend` com `RecommendationQueryBuilder`.
-- [ ] Cenários de referência e `eval-scenarios` no CI (3.8).
-- [ ] `POST /v1/chat` com extração de critérios (Gemini) e crítica conversacional.
+- [x] Cenários de referência (`docs/cenarios/personas.json`) e `eval-scenarios` (3.8).
+- [x] Módulo `chat` com endpoint `POST /v1/chat`, extração de critérios (Gemini com fallback por regras) e crítica conversacional rápida sem chamada LLM.
 
 ### Fase 3 — Ingestão de opiniões
 - [ ] Adapters YouTube, ML (se o spike passar), CSV e manual.

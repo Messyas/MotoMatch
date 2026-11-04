@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createCatalogModule, type DeviceRepository } from "./modules/catalog";
+import { createChatModule, type CriteriaExtractor } from "./modules/chat";
 import { createRecommenderModule } from "./modules/recommender";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
@@ -17,6 +18,7 @@ export interface AppDeps {
   readonly db?: Database;
   readonly eventBus?: EventBus;
   readonly deviceRepo?: DeviceRepository;
+  readonly criteriaExtractor?: CriteriaExtractor;
 }
 
 export function createApp(deps: AppDeps) {
@@ -34,6 +36,16 @@ export function createApp(deps: AppDeps) {
 
   const recommender = createRecommenderModule({
     catalog: catalog.api,
+  });
+
+  const chat = createChatModule({
+    catalog: catalog.api,
+    recommender: recommender.api,
+    config: {
+      apiKey: deps.config.gemini.apiKey,
+      model: deps.config.gemini.model,
+    },
+    criteriaExtractor: deps.criteriaExtractor,
   });
 
   const app = new Hono();
@@ -62,6 +74,9 @@ export function createApp(deps: AppDeps) {
   // Public Recommender Routes (Direct deterministic MAUT engine)
   app.route("/v1/recommend", recommender.routes);
 
+  // Public Conversational Chat (Gemini criteria extraction + critique rules + MAUT)
+  app.route("/v1/chat", chat.routes);
+
   // Protected Admin Routes
   app.use("/v1/admin/*", createAdminAuthMiddleware(deps.config.admin.key));
   app.route("/v1/admin/devices", catalog.routes.adminRoutes);
@@ -70,6 +85,7 @@ export function createApp(deps: AppDeps) {
     app,
     catalog,
     recommender,
+    chat,
     clock,
     logger,
     events,

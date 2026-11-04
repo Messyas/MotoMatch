@@ -8,6 +8,7 @@
     "start": "bun src/main.ts",
     "test": "bun test",
     "typecheck": "tsc -p . --noEmit",
+    "eval:scenarios": "bun scripts/eval-scenarios.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push"
