@@ -1,5 +1,5 @@
 /**
- * @component QualCelResults
+ * @component MessageResults
  * @description Componente responsável por renderizar a seção de resultados da busca de celulares. Ele gerencia a exibição condicional com base no estado da aplicação (carregando, erro, sucesso ou sem resultados).
  * @param {object} props - As propriedades do componente.
  * @param {boolean} [props.loading] - Se `true`, exibe os skeletons de carregamento (`PhoneCardSkeleton`).
