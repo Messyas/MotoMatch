@@ -7,6 +7,7 @@ export interface DatabaseConfig {
 }
 
 export type Database = ReturnType<typeof createDatabase>;
+export type DatabaseClient = Database;
 
 export function createDatabase(config: DatabaseConfig) {
   const queryClient = postgres(config.url, {

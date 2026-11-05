@@ -482,10 +482,10 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] Módulo `chat` com endpoint `POST /v1/chat`, extração de critérios (Gemini com fallback por regras) e crítica conversacional rápida sem chamada LLM.
 
 ### Fase 3 — Ingestão de opiniões
-- [ ] Adapters YouTube, ML (se o spike passar), CSV e manual.
-- [ ] Filtro de relevância, análise de aspectos em lote e controle de cota.
-- [ ] Espelho de catálogo do ML no admin.
-- [ ] Calibração offline dos priors (B2W).
+- [x] Adapters YouTube, ML, CSV e manual.
+- [x] Filtro de relevância, análise de aspectos em lote e controle de cota com acumulador Bayesiano idempotente.
+- [x] Espelho de catálogo do ML no admin (`GET /v1/admin/catalog/search` e vínculo de fontes).
+- [x] Calibração offline dos priors (`scripts/calibrate-priors.ts`).
 
 ### Fase 4 — Scheduler e status
 - [ ] Tabelas `job`, `job_run` e `quota_usage`; advisory lock; tick e catch-up.

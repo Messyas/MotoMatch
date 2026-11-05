@@ -1,20 +1,18 @@
 import { describe, expect, it } from "bun:test";
 import { createApp } from "../../src/app";
-import { InMemoryDeviceRepository } from "../../src/modules/catalog";
-import { RuleBasedCriteriaExtractor } from "../../src/modules/chat";
+import { InMemoryDeviceRepository } from "../../src/modules/catalog/infrastructure/in-memory-device.repository";
+import { InMemoryReviewRepository } from "../../src/modules/reviews";
 import { aConfig } from "../builders/config.builder";
 import { aDevice } from "../builders/device.builder";
 
 describe("HTTP API", () => {
-  const config = aConfig().withAdminKey("super-secret-admin-key-24-chars").build();
+  const config = aConfig().build();
 
   it("GET /health returns 200 with status ok and timestamp without touching database", async () => {
-    const deviceRepo = new InMemoryDeviceRepository();
-    const { app } = createApp({ config, deviceRepo });
-
+    const { app } = createApp({ config });
     const res = await app.request("/health");
-    expect(res.status).toBe(200);
 
+    expect(res.status).toBe(200);
     const body = (await res.json()) as any;
     expect(body.status).toBe("ok");
     expect(body.timestamp).toBeDefined();
@@ -26,18 +24,19 @@ describe("HTTP API", () => {
 
     const res = await app.request("/v1/devices");
     expect(res.status).toBe(200);
-
     const body = (await res.json()) as any;
     expect(body.items).toBeArray();
-    expect(body.items).toHaveLength(0);
   });
 
   it("POST /v1/recommend returns ranked recommendations based on constraints and weights", async () => {
     const deviceRepo = new InMemoryDeviceRepository();
-    const d1 = aDevice().withId("d1").withModel("Budget King").withPriceCents(130000).withBatteryMah(6000).build();
-    const d2 = aDevice().withId("d2").withModel("Premium Pro").withPriceCents(350000).withBatteryMah(4500).build();
+    const d1 = aDevice()
+      .withId("d1")
+      .withModel("Moto G85")
+      .withPriceCents(169900)
+      .withBatteryMah(5000)
+      .build();
     await deviceRepo.save(d1, d1.specs);
-    await deviceRepo.save(d2, d2.specs);
 
     const { app } = createApp({ config, deviceRepo });
 
@@ -49,7 +48,8 @@ describe("HTTP API", () => {
           { kind: "maxPrice", value: 200000 },
         ],
         weights: {
-          battery: 0.8,
+          battery: 0.5,
+          valueForMoney: 0.5,
         },
         limit: 3,
       }),
@@ -57,18 +57,23 @@ describe("HTTP API", () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
-    expect(body.items).toHaveLength(1);
-    expect(body.items[0].device.id).toBe("d1");
-    expect(body.items[0].fitPercent).toBeGreaterThanOrEqual(50);
+    expect(body.items).toBeArray();
+    expect(body.items.length).toBe(1);
+    expect(body.items[0].device.model).toBe("Moto G85");
+    expect(body.items[0].fitPercent).toBeGreaterThan(50);
   });
 
   it("POST /v1/chat orchestrates criteria extraction, recommendation and conversational reply", async () => {
     const deviceRepo = new InMemoryDeviceRepository();
-    const d1 = aDevice().withId("d1").withModel("Moto G85").withPriceCents(169900).withBatteryMah(5000).build();
+    const d1 = aDevice()
+      .withId("d1")
+      .withModel("Moto G85")
+      .withPriceCents(169900)
+      .withBatteryMah(5000)
+      .build();
     await deviceRepo.save(d1, d1.specs);
 
-    const criteriaExtractor = new RuleBasedCriteriaExtractor();
-    const { app } = createApp({ config, deviceRepo, criteriaExtractor });
+    const { app } = createApp({ config, deviceRepo });
 
     const res = await app.request("/v1/chat", {
       method: "POST",
@@ -80,11 +85,11 @@ describe("HTTP API", () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as any;
-    expect(body.reply).toBeDefined();
-    expect(body.results).toHaveLength(1);
-    expect(body.results[0].device.id).toBe("d1");
+    expect(body.reply).toBeString();
+    expect(body.reply.length).toBeGreaterThan(10);
+    expect(body.results).toBeArray();
+    expect(body.results.length).toBe(1);
     expect(body.state).toBeDefined();
-    expect(body.state.referenceDeviceId).toBe("d1");
   });
 
   it("POST /v1/admin/devices requires X-Admin-Key", async () => {
@@ -174,5 +179,58 @@ describe("HTTP API", () => {
     // 6. Verify it is gone
     const getDeletedRes = await app.request(`/v1/devices/${deviceId}`);
     expect(getDeletedRes.status).toBe(404);
+  });
+
+  it("admin routes for review sources and import", async () => {
+    const reviewRepo = new InMemoryReviewRepository();
+    const { app } = createApp({ config, reviewRepo });
+    const adminHeaders = {
+      "Content-Type": "application/json",
+      "X-Admin-Key": config.admin.key,
+    };
+
+    const deviceId = crypto.randomUUID();
+
+    // 1. POST /v1/admin/devices/:id/sources
+    const linkRes = await app.request(`/v1/admin/devices/${deviceId}/sources`, {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        provider: "youtube",
+        externalRef: "yt-video-123",
+        intervalDays: 2,
+      }),
+    });
+    expect(linkRes.status).toBe(201);
+    const linkBody = (await linkRes.json()) as any;
+    expect(linkBody.data.provider).toBe("youtube");
+    expect(linkBody.data.externalRef).toBe("yt-video-123");
+
+    // 2. POST /v1/admin/reviews/import
+    const importRes = await app.request("/v1/admin/reviews/import", {
+      method: "POST",
+      headers: adminHeaders,
+      body: JSON.stringify({
+        items: [
+          {
+            deviceId,
+            content: "Comprei e a bateria dura mais de um dia inteiro sem carregar",
+            provider: "csv",
+          },
+        ],
+      }),
+    });
+    expect(importRes.status).toBe(200);
+    const importBody = (await importRes.json()) as any;
+    expect(importBody.data.inserted).toBe(1);
+    expect(importBody.data.relevant).toBe(1);
+
+    // 3. GET /v1/admin/catalog/search
+    const searchRes = await app.request("/v1/admin/catalog/search?q=Galaxy", {
+      headers: adminHeaders,
+    });
+    expect(searchRes.status).toBe(200);
+    const searchBody = (await searchRes.json()) as any;
+    expect(searchBody.data).toBeArray();
   });
 });

@@ -9,6 +9,7 @@
     "test": "bun test",
     "typecheck": "tsc -p . --noEmit",
     "eval:scenarios": "bun scripts/eval-scenarios.ts",
+    "calibrate:priors": "bun scripts/calibrate-priors.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push"

@@ -3,6 +3,8 @@ import { cors } from "hono/cors";
 import { createCatalogModule, type DeviceRepository } from "./modules/catalog";
 import { createChatModule, type CriteriaExtractor } from "./modules/chat";
 import { createRecommenderModule } from "./modules/recommender";
+import { createReviewsModule, type ReviewRepository } from "./modules/reviews";
+import { createSentimentModule, type SentimentRepository } from "./modules/sentiment";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
 import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
@@ -19,6 +21,8 @@ export interface AppDeps {
   readonly eventBus?: EventBus;
   readonly deviceRepo?: DeviceRepository;
   readonly criteriaExtractor?: CriteriaExtractor;
+  readonly reviewRepo?: ReviewRepository;
+  readonly sentimentRepo?: SentimentRepository;
 }
 
 export function createApp(deps: AppDeps) {
@@ -46,6 +50,25 @@ export function createApp(deps: AppDeps) {
       model: deps.config.gemini.model,
     },
     criteriaExtractor: deps.criteriaExtractor,
+  });
+
+  const reviews = createReviewsModule({
+    db,
+    repository: deps.reviewRepo,
+    clock,
+    logger,
+    youtubeApiKey: deps.config.youtube.apiKey,
+    mercadoLivreConfig: deps.config.mercadoLivre,
+  });
+
+  const sentiment = createSentimentModule({
+    db,
+    repository: deps.sentimentRepo,
+    reviewsApi: reviews.api,
+    clock,
+    logger,
+    geminiApiKey: deps.config.gemini.apiKey,
+    geminiModel: deps.config.gemini.model,
   });
 
   const app = new Hono();
@@ -80,12 +103,15 @@ export function createApp(deps: AppDeps) {
   // Protected Admin Routes
   app.use("/v1/admin/*", createAdminAuthMiddleware(deps.config.admin.key));
   app.route("/v1/admin/devices", catalog.routes.adminRoutes);
+  app.route("/", reviews.routes);
 
   return {
     app,
     catalog,
     recommender,
     chat,
+    reviews,
+    sentiment,
     clock,
     logger,
     events,
