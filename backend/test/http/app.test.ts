@@ -3,6 +3,7 @@ import { createApp } from "../../src/app";
 import { InMemoryDeviceRepository } from "../../src/modules/catalog/infrastructure/in-memory-device.repository";
 import { InMemoryReviewRepository } from "../../src/modules/reviews";
 import { InMemorySchedulerRepository } from "../../src/modules/scheduler";
+import { InMemoryAnalyticsRepository } from "../../src/modules/analytics";
 import { aConfig } from "../builders/config.builder";
 import { aDevice } from "../builders/device.builder";
 
@@ -282,5 +283,36 @@ describe("HTTP API", () => {
     const body = (await res.json()) as any;
     expect(body.data.jobName).toBe("collect_reviews");
     expect(body.data.status).toBe("ok");
+  });
+
+  it("POST /v1/feedback records user feedback and GET /v1/analytics provides usage metrics", async () => {
+    const analyticsRepo = new InMemoryAnalyticsRepository();
+    const { app } = createApp({ config, analyticsRepo });
+
+    const deviceId = crypto.randomUUID();
+
+    // 1. POST /v1/feedback
+    const feedbackRes = await app.request("/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "session-xyz",
+        deviceId,
+        intentSig: "price:<=2000",
+        kind: "up",
+      }),
+    });
+
+    expect(feedbackRes.status).toBe(200);
+    const fbBody = (await feedbackRes.json()) as any;
+    expect(fbBody.data.recorded).toBe(true);
+
+    // 2. GET /v1/analytics
+    const analyticsRes = await app.request("/v1/analytics");
+    expect(analyticsRes.status).toBe(200);
+    const dashBody = (await analyticsRes.json()) as any;
+    expect(dashBody.data.thumbsRatio).toBeDefined();
+    expect(dashBody.data.thumbsRatio.up).toBe(1);
+    expect(dashBody.data.thumbsRatio.upPercent).toBe(100);
   });
 });

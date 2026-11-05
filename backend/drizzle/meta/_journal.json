@@ -22,6 +22,13 @@
       "when": 1793837375196,
       "tag": "0002_clean_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793838287651,
+      "tag": "0003_robust_night_thrasher",
+      "breakpoints": true
     }
   ]
 }

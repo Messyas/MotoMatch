@@ -494,9 +494,9 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] `GET /v1/status` e a aba Status.
 
 ### Fase 5 — Aprendizado coletivo e retenção
-- [ ] Eventos anônimos, feedback 👍/👎 e placar Beta com Thompson (3.6).
-- [ ] Rollups diários, `retention_sweep` e limite de armazenamento (5.4).
-- [ ] Aba "Dados de uso".
+- [x] Eventos anônimos, feedback 👍/👎 e placar Beta com Thompson (3.6).
+- [x] Rollups diários, `retention_sweep` e limite de armazenamento (5.4).
+- [ ] Aba "Dados de uso" (front-end Fase 7).
 
 ### Fase 6 — Evidências
 - [ ] Divisão em trechos, embeddings e `pgvector`; seleção de trechos na resposta (3.7).

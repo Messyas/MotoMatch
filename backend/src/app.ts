@@ -7,6 +7,7 @@ import { createReviewsModule, type ReviewRepository } from "./modules/reviews";
 import { createSchedulerModule, type SchedulerRepository } from "./modules/scheduler";
 import { createSentimentModule, type SentimentRepository } from "./modules/sentiment";
 import { createStatusModule } from "./modules/status";
+import { createAnalyticsModule, type AnalyticsRepository } from "./modules/analytics";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
 import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
@@ -26,6 +27,7 @@ export interface AppDeps {
   readonly reviewRepo?: ReviewRepository;
   readonly sentimentRepo?: SentimentRepository;
   readonly schedulerRepo?: SchedulerRepository;
+  readonly analyticsRepo?: AnalyticsRepository;
 }
 
 export function createApp(deps: AppDeps) {
@@ -34,7 +36,7 @@ export function createApp(deps: AppDeps) {
   const events = deps.eventBus ?? new InProcessEventBus(logger);
   const db =
     deps.db ??
-    (deps.deviceRepo || deps.schedulerRepo || deps.reviewRepo
+    (deps.deviceRepo || deps.schedulerRepo || deps.reviewRepo || deps.analyticsRepo
       ? undefined
       : createDatabase(deps.config.database));
 
@@ -78,10 +80,18 @@ export function createApp(deps: AppDeps) {
     geminiModel: deps.config.gemini.model,
   });
 
+  const analytics = createAnalyticsModule({
+    db,
+    repository: deps.analyticsRepo,
+    eventBus: events,
+    clock,
+    logger,
+  });
+
   const scheduler = createSchedulerModule({
     db,
     repository: deps.schedulerRepo,
-    jobs: [...reviews.jobs, ...sentiment.jobs],
+    jobs: [...reviews.jobs, ...sentiment.jobs, ...analytics.jobs],
     clock,
     logger,
     cronSecret: deps.config.cron.secret,
@@ -123,7 +133,10 @@ export function createApp(deps: AppDeps) {
   // Public Conversational Chat (Gemini criteria extraction + critique rules + MAUT)
   app.route("/v1/chat", chat.routes);
 
-  // System Status Route
+  // Public Feedback and Usage Analytics (/v1/feedback, /v1/analytics)
+  app.route("/", analytics.routes);
+
+  // System Status Route (/v1/status)
   app.route("/", status.routes);
 
   // Internal Cron Route (/internal/tick)
@@ -141,6 +154,7 @@ export function createApp(deps: AppDeps) {
     chat,
     reviews,
     sentiment,
+    analytics,
     scheduler,
     status,
     clock,
