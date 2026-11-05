@@ -66,12 +66,12 @@ export function useFavoritePhones() {
           dispositivo: phoneItem
             ? { ...phoneItem, isFavorite: true, favoriteId: `fav-${idDispositivo}` }
             : {
-                id: idDispositivo,
-                title: "Celular",
-                imageUrls: [],
-                specs: {},
-                isFavorite: true,
-              },
+              id: idDispositivo,
+              title: "Celular",
+              imageUrls: [],
+              specs: {},
+              isFavorite: true,
+            },
           historico: {
             idHistorico: `hist-${Date.now()}`,
             criterios: [],
@@ -106,7 +106,6 @@ export function useFavoritePhones() {
     isError: false,
     toggleFavorite,
     removerFavorito,
-    isMutating: false,
-    pendingFavoriteIds: new Set<string>(),
+    isMutating: () => false,
   };
 }

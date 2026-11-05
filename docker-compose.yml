@@ -1,45 +1,87 @@
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: phonematch-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: phonematch
+      POSTGRES_PASSWORD: phonematch
+      POSTGRES_DB: phonematch
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phonematch -d phonematch"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
   backend:
-    build: ./backend
-    env_file:
-      - ./backend/.env
-    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: phonematch-backend
+    restart: unless-stopped
     ports:
       - "3001:3001"
     volumes:
       - ./backend:/app
       - /app/node_modules
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=3001
+      - CORS_ORIGIN=http://localhost:3000
+      - DATABASE_URL=postgresql://phonematch:phonematch@postgres:5432/phonematch?sslmode=disable
+      - DATABASE_MAX_CONNECTIONS=5
+      - ADMIN_KEY=${ADMIN_KEY:-your-admin-key-min-24-chars-long}
+      - CRON_SECRET=${CRON_SECRET:-your-cron-secret-min-24-chars-long}
+      - CREDENTIALS_ENC_KEY=${CREDENTIALS_ENC_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your-gemini-api-key}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_DAILY_LIMIT=1500
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-your-youtube-api-key}
+      - YOUTUBE_DAILY_LIMIT=10000
+      - TICK_MAX_SECONDS=60
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - app-network
-    environment:
-      - RECOMMENDATION_SERVICE_URL=http://recommendation:8000/ml/score-dispositivos
-      - RECOMMENDATION_SERVICE_TIMEOUT=4000
-    depends_on:
-      recommendation:
-        condition: service_healthy
 
   frontend:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: frontend
+    container_name: phonematch-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
       - ./client:/app
       - /app/node_modules
+      - /app/.next
     environment:
-      - CHOKIDAR_USEPOLLING=true
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
       - WATCHPACK_POLLING=true
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/v1
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
     networks:
       - app-network
 
+  # SonarQube opcional: execute com `docker compose --profile sonar up`
   sonarqube:
     image: sonarqube:community
     container_name: sonarqube
+    profiles:
+      - sonar
     ports:
       - "9000:9000"
     environment:
@@ -53,38 +95,12 @@ services:
     networks:
       - app-network
 
-  postgres:
-    image: postgres:15
-    container_name: sonarqube_db
-    environment:
-      POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar
-      POSTGRES_DB: sonarqube
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-
-  recommendation:
-    build:
-      context: .
-      dockerfile: recommendationService/Dockerfile
-    container_name: recommendation
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
-
 networks:
   app-network:
     driver: bridge
 
 volumes:
+  postgres_data:
   sonarqube_data:
   sonarqube_extensions:
   sonarqube_logs:
-  postgres_data:
