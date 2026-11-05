@@ -8,6 +8,11 @@ import { createSchedulerModule, type SchedulerRepository } from "./modules/sched
 import { createSentimentModule, type SentimentRepository } from "./modules/sentiment";
 import { createStatusModule } from "./modules/status";
 import { createAnalyticsModule, type AnalyticsRepository } from "./modules/analytics";
+import {
+  createEvidenceModule,
+  type EvidenceRepository,
+  type EmbeddingService,
+} from "./modules/evidence";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
 import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
@@ -28,6 +33,8 @@ export interface AppDeps {
   readonly sentimentRepo?: SentimentRepository;
   readonly schedulerRepo?: SchedulerRepository;
   readonly analyticsRepo?: AnalyticsRepository;
+  readonly evidenceRepo?: EvidenceRepository;
+  readonly embeddingService?: EmbeddingService;
 }
 
 export function createApp(deps: AppDeps) {
@@ -36,7 +43,11 @@ export function createApp(deps: AppDeps) {
   const events = deps.eventBus ?? new InProcessEventBus(logger);
   const db =
     deps.db ??
-    (deps.deviceRepo || deps.schedulerRepo || deps.reviewRepo || deps.analyticsRepo
+    (deps.deviceRepo ||
+    deps.schedulerRepo ||
+    deps.reviewRepo ||
+    deps.analyticsRepo ||
+    deps.evidenceRepo
       ? undefined
       : createDatabase(deps.config.database));
 
@@ -88,10 +99,24 @@ export function createApp(deps: AppDeps) {
     logger,
   });
 
+  const evidence = createEvidenceModule({
+    db,
+    repository: deps.evidenceRepo,
+    embeddingService: deps.embeddingService,
+    geminiApiKey: deps.config.gemini.apiKey,
+    eventBus: events,
+    logger,
+  });
+
   const scheduler = createSchedulerModule({
     db,
     repository: deps.schedulerRepo,
-    jobs: [...reviews.jobs, ...sentiment.jobs, ...analytics.jobs],
+    jobs: [
+      ...reviews.jobs,
+      ...sentiment.jobs,
+      ...analytics.jobs,
+      ...evidence.jobs,
+    ],
     clock,
     logger,
     cronSecret: deps.config.cron.secret,
@@ -136,6 +161,9 @@ export function createApp(deps: AppDeps) {
   // Public Feedback and Usage Analytics (/v1/feedback, /v1/analytics)
   app.route("/", analytics.routes);
 
+  // Public Evidence Snippets (/v1/devices/:id/evidence)
+  app.route("/", evidence.routes);
+
   // System Status Route (/v1/status)
   app.route("/", status.routes);
 
@@ -155,6 +183,7 @@ export function createApp(deps: AppDeps) {
     reviews,
     sentiment,
     analytics,
+    evidence,
     scheduler,
     status,
     clock,

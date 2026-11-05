@@ -4,6 +4,7 @@ import { InMemoryDeviceRepository } from "../../src/modules/catalog/infrastructu
 import { InMemoryReviewRepository } from "../../src/modules/reviews";
 import { InMemorySchedulerRepository } from "../../src/modules/scheduler";
 import { InMemoryAnalyticsRepository } from "../../src/modules/analytics";
+import { InMemoryEvidenceRepository } from "../../src/modules/evidence";
 import { aConfig } from "../builders/config.builder";
 import { aDevice } from "../builders/device.builder";
 
@@ -314,5 +315,37 @@ describe("HTTP API", () => {
     expect(dashBody.data.thumbsRatio).toBeDefined();
     expect(dashBody.data.thumbsRatio.up).toBe(1);
     expect(dashBody.data.thumbsRatio.upPercent).toBe(100);
+  });
+
+  it("GET /v1/devices/:id/evidence retrieves top citations formatted with quote and metadata", async () => {
+    const evidenceRepo = new InMemoryEvidenceRepository();
+    const { app } = createApp({ config, evidenceRepo });
+
+    const deviceId = crypto.randomUUID();
+
+    await evidenceRepo.saveSnippets([
+      {
+        reviewId: crypto.randomUUID(),
+        chunkIndex: 0,
+        deviceId,
+        aspect: "battery",
+        text: "aguenta o dia todo jogando",
+        sentiment: "positive",
+        provider: "youtube",
+        publishedAt: new Date("2026-03-20T10:00:00Z"),
+      },
+    ]);
+
+    const res = await app.request(
+      `/v1/devices/${deviceId}/evidence?aspects=battery`,
+    );
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as any;
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0].aspect).toBe("battery");
+    expect(body.data[0].quote).toBe(
+      '"aguenta o dia todo jogando" (YouTube, mar/2026)',
+    );
   });
 });

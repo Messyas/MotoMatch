@@ -499,7 +499,7 @@ POST /internal/tick                  # header X-Cron-Secret
 - [ ] Aba "Dados de uso" (front-end Fase 7).
 
 ### Fase 6 — Evidências
-- [ ] Divisão em trechos, embeddings e `pgvector`; seleção de trechos na resposta (3.7).
+- [x] Divisão em trechos, embeddings e `pgvector`; seleção de trechos na resposta (3.7).
 
 ### Fase 7 — Front e acabamento
 - [ ] Limpeza das telas de auth, novo cartão de resultado, críticas, favoritos locais, snapshot para cold start.
