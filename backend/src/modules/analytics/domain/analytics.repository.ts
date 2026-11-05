@@ -71,3 +71,4 @@ export interface AnalyticsRepository {
     now: Date;
   }): Promise<RetentionSweepResult>;
 }
+

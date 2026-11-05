@@ -68,3 +68,4 @@ export class GeminiEmbeddingService implements EmbeddingService {
     }
   }
 }
+

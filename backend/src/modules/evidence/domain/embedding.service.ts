@@ -49,3 +49,4 @@ export class InMemoryEmbeddingService implements EmbeddingService {
     return texts.map((t) => generatePseudoEmbedding(t));
   }
 }
+

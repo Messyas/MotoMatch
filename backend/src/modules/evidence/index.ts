@@ -10,3 +10,4 @@ export * from "./infrastructure/in-memory-evidence.repository";
 export * from "./infrastructure/postgres-evidence.repository";
 export * from "./infrastructure/gemini-embedding.service";
 export * from "./evidence.module";
+

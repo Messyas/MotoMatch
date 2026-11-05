@@ -502,9 +502,9 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] Divisão em trechos, embeddings e `pgvector`; seleção de trechos na resposta (3.7).
 
 ### Fase 7 — Front e acabamento
-- [ ] Limpeza das telas de auth, novo cartão de resultado, críticas, favoritos locais, snapshot para cold start.
+- [x] Limpeza das telas de auth, novo cartão de resultado, críticas, favoritos locais, snapshot para cold start.
 - [ ] Testes E2E (Cypress) dos fluxos principais.
-- [ ] README novo com a arquitetura, as decisões e os limites do plano gratuito, explicados para quem visita o portfólio.
+- [x] README novo com a arquitetura, as decisões e os limites do plano gratuito, explicados para quem visita o portfólio.
 
 ---
 

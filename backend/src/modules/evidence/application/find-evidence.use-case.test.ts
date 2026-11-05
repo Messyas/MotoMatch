@@ -57,3 +57,4 @@ describe("Find Evidence Use Case", () => {
     expect(map.battery!.quote).toContain("aguenta o dia todo");
   });
 });
+

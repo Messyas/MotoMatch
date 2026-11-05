@@ -1,0 +1,81 @@
+{
+  "updatedAt": "2026-11-04T20:00:00.000Z",
+  "devices": [
+    {
+      "id": "c1a01111-0000-0000-0000-000000000001",
+      "brand": "Motorola",
+      "model": "Moto G85 5G",
+      "priceCents": 169900,
+      "photos": ["https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80"],
+      "specs": {
+        "battery_mah": 5000,
+        "screen_size_inches": 6.67,
+        "screen_refresh_hz": 120,
+        "ram_gb": 8,
+        "storage_gb": 256,
+        "is_5g": true,
+        "camera_main_mp": 50,
+        "processor_model": "Snapdragon 6s Gen 3"
+      },
+      "aspectScores": {
+        "battery": { "score": 4.5, "confidence": 0.88, "n": 142 },
+        "camera": { "score": 4.0, "confidence": 0.81, "n": 98 },
+        "performance": { "score": 3.9, "confidence": 0.84, "n": 115 },
+        "screen": { "score": 4.6, "confidence": 0.90, "n": 160 },
+        "build": { "score": 4.3, "confidence": 0.80, "n": 78 },
+        "cost_benefit": { "score": 4.7, "confidence": 0.92, "n": 210 }
+      }
+    },
+    {
+      "id": "c1a01111-0000-0000-0000-000000000002",
+      "brand": "Samsung",
+      "model": "Galaxy A55 5G",
+      "priceCents": 199900,
+      "photos": ["https://images.unsplash.com/photo-1580910051074-3eb694886505?w=600&auto=format&fit=crop&q=80"],
+      "specs": {
+        "battery_mah": 5000,
+        "screen_size_inches": 6.6,
+        "screen_refresh_hz": 120,
+        "ram_gb": 8,
+        "storage_gb": 128,
+        "is_5g": true,
+        "camera_main_mp": 50,
+        "processor_model": "Exynos 1480"
+      },
+      "aspectScores": {
+        "battery": { "score": 4.4, "confidence": 0.91, "n": 320 },
+        "camera": { "score": 4.5, "confidence": 0.93, "n": 410 },
+        "performance": { "score": 4.2, "confidence": 0.89, "n": 280 },
+        "screen": { "score": 4.7, "confidence": 0.94, "n": 350 },
+        "build": { "score": 4.6, "confidence": 0.90, "n": 230 },
+        "cost_benefit": { "score": 4.3, "confidence": 0.88, "n": 340 }
+      }
+    },
+    {
+      "id": "c1a01111-0000-0000-0000-000000000003",
+      "brand": "Xiaomi",
+      "model": "Redmi Note 13 Pro 5G",
+      "priceCents": 184900,
+      "photos": ["https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=600&auto=format&fit=crop&q=80"],
+      "specs": {
+        "battery_mah": 5100,
+        "screen_size_inches": 6.67,
+        "screen_refresh_hz": 120,
+        "ram_gb": 8,
+        "storage_gb": 256,
+        "is_5g": true,
+        "camera_main_mp": 200,
+        "processor_model": "Snapdragon 7s Gen 2"
+      },
+      "aspectScores": {
+        "battery": { "score": 4.3, "confidence": 0.87, "n": 190 },
+        "camera": { "score": 4.6, "confidence": 0.91, "n": 260 },
+        "performance": { "score": 4.1, "confidence": 0.85, "n": 175 },
+        "screen": { "score": 4.7, "confidence": 0.92, "n": 220 },
+        "build": { "score": 4.2, "confidence": 0.82, "n": 130 },
+        "cost_benefit": { "score": 4.6, "confidence": 0.90, "n": 290 }
+      }
+    }
+  ]
+}
+

@@ -39,3 +39,4 @@ export interface FormattedEvidenceItem {
   readonly publishedAt?: Date;
   readonly quote: string;
 }
+

@@ -35,3 +35,4 @@ export {
   collectiveScores as collectiveScoresTable,
   analyticsDaily as analyticsDailyTable,
 } from "./infrastructure/analytics.schema";
+

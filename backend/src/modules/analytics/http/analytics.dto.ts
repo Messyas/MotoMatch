@@ -8,3 +8,4 @@ export const feedbackBodySchema = z.object({
 });
 
 export type FeedbackBody = z.infer<typeof feedbackBodySchema>;
+

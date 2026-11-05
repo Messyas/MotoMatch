@@ -37,3 +37,4 @@ export function createAnalyticsRoutes(deps: AnalyticsRoutesDeps) {
 
   return routes;
 }
+

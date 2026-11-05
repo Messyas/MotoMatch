@@ -34,3 +34,4 @@ describe("Embedding Service", () => {
     expect(result[1]!).toHaveLength(EMBEDDING_DIMENSION);
   });
 });
+

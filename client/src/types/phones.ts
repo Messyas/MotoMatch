@@ -35,6 +35,9 @@ export interface PhoneItem {
   perfilMatchPercent?: number;
   criteriosMatchPercent?: number;
   justificativas?: string[];
+  evidence?: Record<string, string>;
+  evidenceItems?: Array<{ aspect: string; quote: string }>;
+  aspectScores?: Record<string, { score: number; confidence: number; n?: number }>;
   matchExplanation?: {
     specFit: number;
     opinionSim: number;
@@ -68,6 +71,9 @@ export interface BackendDispositivo {
   perfilMatchPercent?: number;
   criteriosMatchPercent?: number;
   justificativas?: string[];
+  evidence?: Record<string, string>;
+  evidenceItems?: Array<{ aspect: string; quote: string }>;
+  aspectScores?: Record<string, { score: number; confidence: number; n?: number }>;
   matchExplanation?: {
     specFit: number;
     opinionSim: number;

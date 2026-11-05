@@ -47,3 +47,4 @@ describe("RecordFeedbackUseCase", () => {
     expect(scoreAfter!.alpha).toBe(2.0);
   });
 });
+

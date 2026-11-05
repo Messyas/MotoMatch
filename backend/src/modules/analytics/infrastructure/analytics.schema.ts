@@ -78,3 +78,4 @@ export const analyticsDaily = pgTable(
     index("analytics_daily_day_idx").on(table.day),
   ],
 );
+

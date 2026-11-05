@@ -85,3 +85,4 @@ export function computeCollectiveBonus(options: CollectiveBonusOptions): number 
   const bonus = epsilon * (val - 0.5);
   return Number(Math.max(-epsilon, Math.min(epsilon, bonus)).toFixed(4));
 }
+

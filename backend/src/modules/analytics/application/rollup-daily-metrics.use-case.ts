@@ -23,3 +23,4 @@ export class RollupDailyMetricsUseCase {
     return { day: targetDay, rollupsCount: count };
   }
 }
+

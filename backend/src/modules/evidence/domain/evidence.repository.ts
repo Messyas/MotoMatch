@@ -22,3 +22,4 @@ export interface EvidenceRepository {
   pruneExcessSnippets(maxPerDeviceAspect: number): Promise<number>;
   countSnippets(): Promise<number>;
 }
+
