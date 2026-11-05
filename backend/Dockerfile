@@ -16,3 +16,4 @@ EXPOSE 3001
 
 # Run migrations if database is ready, then launch development server
 CMD ["bun", "run", "dev"]
+

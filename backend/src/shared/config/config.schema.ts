@@ -17,7 +17,8 @@ export const configSchema = z.object({
   }),
   gemini: z.object({
     apiKey: z.string().min(1),
-    model: z.string().default("gemini-2.5-flash"),
+    model: z.string().default("gemini-1.5-flash"),
+    embeddingModel: z.string().default("text-embedding-004"),
     dailyRequestLimit: z.coerce.number().int().positive().default(1500),
   }),
   youtube: z.object({

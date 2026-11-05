@@ -42,7 +42,8 @@ services:
       - CRON_SECRET=${CRON_SECRET:-your-cron-secret-min-24-chars-long}
       - CREDENTIALS_ENC_KEY=${CREDENTIALS_ENC_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-your-gemini-api-key}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - GEMINI_EMBEDDING_MODEL=${GEMINI_EMBEDDING_MODEL:-text-embedding-004}
       - GEMINI_DAILY_LIMIT=1500
       - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-your-youtube-api-key}
       - YOUTUBE_DAILY_LIMIT=10000

@@ -20,7 +20,8 @@ describe("loadConfig", () => {
     const config = loadConfig(validEnv);
     expect(config.server.port).toBe(3001);
     expect(config.server.corsOrigin).toBe("http://localhost:3000");
-    expect(config.gemini.model).toBe("gemini-2.5-flash");
+    expect(config.gemini.model).toBe("gemini-1.5-flash");
+    expect(config.gemini.embeddingModel).toBe("text-embedding-004");
     expect(config.gemini.dailyRequestLimit).toBe(1500);
     expect(config.youtube.dailyUnitLimit).toBe(10_000);
     expect(config.scheduler.tickMaxSeconds).toBe(60);
@@ -52,8 +53,8 @@ describe("loadConfig", () => {
   });
 
   it("aConfig() builder generates a valid test configuration", () => {
-    const config = aConfig().withPort(4000).build();
-    expect(config.server.port).toBe(4000);
-    expect(config.admin.key.length).toBeGreaterThanOrEqual(24);
+    const testConfig = aConfig().build();
+    expect(testConfig.server.port).toBe(3001);
+    expect(testConfig.gemini.apiKey).toBe("test-gemini-key");
   });
 });

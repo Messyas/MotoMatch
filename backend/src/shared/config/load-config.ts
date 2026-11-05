@@ -20,6 +20,7 @@ export function mapEnvToConfigShape(env: Record<string, string | undefined>) {
     gemini: {
       apiKey: env.GEMINI_API_KEY,
       model: env.GEMINI_MODEL,
+      embeddingModel: env.GEMINI_EMBEDDING_MODEL,
       dailyRequestLimit: env.GEMINI_DAILY_LIMIT,
     },
     youtube: {

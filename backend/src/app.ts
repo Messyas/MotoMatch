@@ -104,6 +104,7 @@ export function createApp(deps: AppDeps) {
     repository: deps.evidenceRepo,
     embeddingService: deps.embeddingService,
     geminiApiKey: deps.config.gemini.apiKey,
+    geminiEmbeddingModel: deps.config.gemini.embeddingModel,
     eventBus: events,
     logger,
   });

@@ -18,7 +18,8 @@ export class ConfigBuilder {
     },
     gemini: {
       apiKey: "test-gemini-key",
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
+      embeddingModel: "text-embedding-004",
       dailyRequestLimit: 1500,
     },
     youtube: {
@@ -49,17 +50,11 @@ export class ConfigBuilder {
     return this;
   }
 
-  withPort(port: number): this {
-    return this.with("server", { port });
-  }
-
-  withAdminKey(key: string): this {
-    return this.with("admin", { key });
-  }
-
   build(): AppConfig {
     return Object.freeze(JSON.parse(JSON.stringify(this.config)));
   }
 }
 
-export const aConfig = () => new ConfigBuilder();
+export function aConfig(): ConfigBuilder {
+  return new ConfigBuilder();
+}
