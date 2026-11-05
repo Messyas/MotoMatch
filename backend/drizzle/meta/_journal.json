@@ -15,6 +15,13 @@
       "when": 1793836597906,
       "tag": "0001_wild_colleen_wing",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793837375196,
+      "tag": "0002_clean_serpent_society",
+      "breakpoints": true
     }
   ]
 }

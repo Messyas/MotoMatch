@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { createApp } from "../../src/app";
 import { InMemoryDeviceRepository } from "../../src/modules/catalog/infrastructure/in-memory-device.repository";
 import { InMemoryReviewRepository } from "../../src/modules/reviews";
+import { InMemorySchedulerRepository } from "../../src/modules/scheduler";
 import { aConfig } from "../builders/config.builder";
 import { aDevice } from "../builders/device.builder";
 
@@ -232,5 +233,54 @@ describe("HTTP API", () => {
     expect(searchRes.status).toBe(200);
     const searchBody = (await searchRes.json()) as any;
     expect(searchBody.data).toBeArray();
+  });
+
+  it("POST /internal/tick executes scheduled tick when authorized", async () => {
+    const schedulerRepo = new InMemorySchedulerRepository();
+    const { app } = createApp({ config, schedulerRepo });
+
+    // Unauthorized
+    const unauthRes = await app.request("/internal/tick", { method: "POST" });
+    expect(unauthRes.status).toBe(401);
+
+    // Authorized
+    const authRes = await app.request("/internal/tick", {
+      method: "POST",
+      headers: { "X-Cron-Secret": config.cron.secret },
+    });
+    expect(authRes.status).toBe(200);
+    const body = (await authRes.json()) as any;
+    expect(body.data.ran).toBe(true);
+  });
+
+  it("GET /v1/status returns comprehensive system status overview", async () => {
+    const schedulerRepo = new InMemorySchedulerRepository();
+    const { app } = createApp({ config, schedulerRepo });
+
+    const res = await app.request("/v1/status");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.data.status).toBe("healthy");
+    expect(body.data.jobs).toBeArray();
+    expect(body.data.catalog).toBeDefined();
+    expect(body.data.reviews).toBeDefined();
+  });
+
+  it("POST /v1/admin/jobs/:name/run runs a job on demand", async () => {
+    const schedulerRepo = new InMemorySchedulerRepository();
+    const { app } = createApp({ config, schedulerRepo });
+    const adminHeaders = {
+      "X-Admin-Key": config.admin.key,
+    };
+
+    const res = await app.request("/v1/admin/jobs/collect_reviews/run", {
+      method: "POST",
+      headers: adminHeaders,
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as any;
+    expect(body.data.jobName).toBe("collect_reviews");
+    expect(body.data.status).toBe("ok");
   });
 });

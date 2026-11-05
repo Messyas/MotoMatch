@@ -6,6 +6,8 @@ import { PostgresSentimentRepository } from "./infrastructure/postgres-sentiment
 import { InMemorySentimentRepository } from "./infrastructure/in-memory-sentiment.repository";
 import { GeminiSentimentAnalyzer } from "./infrastructure/gemini-sentiment-analyzer";
 import { RuleBasedSentimentAnalyzer } from "./domain/rule-based-sentiment-analyzer";
+import { AnalyzePendingReviewsJob } from "./jobs/analyze-pending-reviews.job";
+import { AggregateStatsJob } from "./jobs/aggregate-stats.job";
 import { AnalyzePendingReviewsUseCase } from "./application/analyze-pending-reviews.use-case";
 import { AggregateAspectStatsUseCase } from "./application/aggregate-aspect-stats.use-case";
 import {
@@ -131,6 +133,7 @@ export function createSentimentModule(deps: SentimentModuleDeps) {
   return {
     api,
     repository,
-    jobs: [],
+    jobs: [new AnalyzePendingReviewsJob(api), new AggregateStatsJob(api)],
   };
 }
+

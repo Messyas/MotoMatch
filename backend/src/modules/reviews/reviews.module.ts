@@ -5,6 +5,7 @@ import { PostgresReviewRepository } from "./infrastructure/postgres-review.repos
 import { InMemoryReviewRepository } from "./infrastructure/in-memory-review.repository";
 import { YoutubeReviewSource } from "./infrastructure/youtube.review-source";
 import { MercadoLivreReviewSource } from "./infrastructure/mercadolivre.review-source";
+import { CollectReviewsJob } from "./jobs/collect-reviews.job";
 import { CollectReviewsUseCase } from "./application/collect-reviews.use-case";
 import { ImportReviewsUseCase } from "./application/import-reviews.use-case";
 import { LinkReviewSourceUseCase } from "./application/link-review-source.use-case";
@@ -136,6 +137,7 @@ export function createReviewsModule(deps: ReviewsModuleDeps) {
     routes,
     api,
     repository,
-    jobs: [],
+    jobs: [new CollectReviewsJob(api)],
   };
 }
+

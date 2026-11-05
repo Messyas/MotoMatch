@@ -4,7 +4,9 @@ import { createCatalogModule, type DeviceRepository } from "./modules/catalog";
 import { createChatModule, type CriteriaExtractor } from "./modules/chat";
 import { createRecommenderModule } from "./modules/recommender";
 import { createReviewsModule, type ReviewRepository } from "./modules/reviews";
+import { createSchedulerModule, type SchedulerRepository } from "./modules/scheduler";
 import { createSentimentModule, type SentimentRepository } from "./modules/sentiment";
+import { createStatusModule } from "./modules/status";
 import type { AppConfig } from "./shared/config/config.schema";
 import { createDatabase, type Database } from "./shared/db/client";
 import { type EventBus, InProcessEventBus } from "./shared/events/event-bus";
@@ -23,13 +25,18 @@ export interface AppDeps {
   readonly criteriaExtractor?: CriteriaExtractor;
   readonly reviewRepo?: ReviewRepository;
   readonly sentimentRepo?: SentimentRepository;
+  readonly schedulerRepo?: SchedulerRepository;
 }
 
 export function createApp(deps: AppDeps) {
   const clock = deps.clock ?? new SystemClock();
   const logger = deps.logger ?? new StructuredLogger();
   const events = deps.eventBus ?? new InProcessEventBus(logger);
-  const db = deps.db ?? (deps.deviceRepo ? undefined : createDatabase(deps.config.database));
+  const db =
+    deps.db ??
+    (deps.deviceRepo || deps.schedulerRepo || deps.reviewRepo
+      ? undefined
+      : createDatabase(deps.config.database));
 
   const catalog = createCatalogModule({
     db,
@@ -71,6 +78,22 @@ export function createApp(deps: AppDeps) {
     geminiModel: deps.config.gemini.model,
   });
 
+  const scheduler = createSchedulerModule({
+    db,
+    repository: deps.schedulerRepo,
+    jobs: [...reviews.jobs, ...sentiment.jobs],
+    clock,
+    logger,
+    cronSecret: deps.config.cron.secret,
+  });
+
+  const status = createStatusModule({
+    schedulerRepository: scheduler.repository,
+    reviewRepository: reviews.repository,
+    catalogApi: catalog.api,
+    clock,
+  });
+
   const app = new Hono();
   app.onError(createErrorHandler(logger));
 
@@ -100,6 +123,12 @@ export function createApp(deps: AppDeps) {
   // Public Conversational Chat (Gemini criteria extraction + critique rules + MAUT)
   app.route("/v1/chat", chat.routes);
 
+  // System Status Route
+  app.route("/", status.routes);
+
+  // Internal Cron Route (/internal/tick)
+  app.route("/", scheduler.routes);
+
   // Protected Admin Routes
   app.use("/v1/admin/*", createAdminAuthMiddleware(deps.config.admin.key));
   app.route("/v1/admin/devices", catalog.routes.adminRoutes);
@@ -112,6 +141,8 @@ export function createApp(deps: AppDeps) {
     chat,
     reviews,
     sentiment,
+    scheduler,
+    status,
     clock,
     logger,
     events,

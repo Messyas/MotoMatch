@@ -488,10 +488,10 @@ POST /internal/tick                  # header X-Cron-Secret
 - [x] Calibração offline dos priors (`scripts/calibrate-priors.ts`).
 
 ### Fase 4 — Scheduler e status
-- [ ] Tabelas `job`, `job_run` e `quota_usage`; advisory lock; tick e catch-up.
-- [ ] Prioridade e intervalo adaptativo.
-- [ ] Workflow do GitHub Actions (cron).
-- [ ] `GET /v1/status` e a aba Status.
+- [x] Tabelas `job`, `job_run` e `quota_usage`; advisory lock; tick e catch-up.
+- [x] Prioridade e intervalo adaptativo.
+- [x] Workflow do GitHub Actions (cron).
+- [x] `GET /v1/status` e a aba Status.
 
 ### Fase 5 — Aprendizado coletivo e retenção
 - [ ] Eventos anônimos, feedback 👍/👎 e placar Beta com Thompson (3.6).
