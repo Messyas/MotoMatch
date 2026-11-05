@@ -21,3 +21,4 @@ export interface SchedulerRepository {
   getRecentJobRuns(limit: number): Promise<JobRun[]>;
   getAllJobStates(): Promise<JobState[]>;
 }
+

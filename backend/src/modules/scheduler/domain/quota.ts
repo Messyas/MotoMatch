@@ -4,3 +4,4 @@ export interface QuotaUsage {
   readonly used: number;
   readonly limit: number;
 }
+

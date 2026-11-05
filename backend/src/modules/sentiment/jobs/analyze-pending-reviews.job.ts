@@ -25,3 +25,4 @@ export class AnalyzePendingReviewsJob implements ScheduledJob {
     };
   }
 }
+

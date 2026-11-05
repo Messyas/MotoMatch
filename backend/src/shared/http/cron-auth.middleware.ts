@@ -11,3 +11,4 @@ export function createCronAuthMiddleware(expectedSecret: string): MiddlewareHand
     await next();
   };
 }
+

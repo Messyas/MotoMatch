@@ -76,3 +76,4 @@ describe("TickUseCase", () => {
     expect(job.executionCount).toBe(0);
   });
 });
+

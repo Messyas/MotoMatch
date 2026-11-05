@@ -48,3 +48,4 @@ export const quotaUsages = pgTable(
   },
   (table) => [primaryKey({ columns: [table.day, table.provider] })],
 );
+

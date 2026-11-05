@@ -43,3 +43,4 @@ export class CollectReviewsJob implements ScheduledJob {
     };
   }
 }
+

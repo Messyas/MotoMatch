@@ -16,3 +16,4 @@ export function createStatusRoutes(deps: StatusRoutesDeps) {
 
   return routes;
 }
+
